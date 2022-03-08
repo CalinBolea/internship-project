@@ -2,10 +2,20 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * @ORM\Entity()
+ */
 class User
 {
+    /**
+     * @ORM\Id()
+     * @ORM\GeneratedValue()
+     * @ORM\Column(type="integer")
+     */
     private int $id;
 
     public string $password = '';
@@ -20,7 +30,19 @@ class User
 
     private Collection $roles;
 
+    /**
+     * @ORM\ManyToMany(targetEntity="Programme", mappedBy="customers")
+     */
     private Collection $programmes;
+
+    /**
+     * @param Collection $programmes
+     */
+    public function __construct()
+    {
+        $this->programmes = new ArrayCollection();
+    }
+
 
     public function getId(): int
     {
@@ -49,5 +71,17 @@ class User
     public function getProgrammes(): Collection
     {
         return $this->programmes;
+    }
+
+    public function addProgramme(Programme $programme): self
+    {
+        if ($this->programmes->contains($programme)) {
+            return $this;
+        }
+
+        $this->programmes->add($programme);
+        $programme->addCustomer($this);
+
+        return $this;
     }
 }
